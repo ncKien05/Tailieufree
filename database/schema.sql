@@ -6,15 +6,16 @@ CREATE TABLE users (
     avatar_url VARCHAR(255),
     school VARCHAR(150),
     major VARCHAR(150),
-    role VARCHAR(20) DEFAULT 'USER' CHECK (role IN ('USER', 'MOD', 'ADMIN')),
-    reputation_points INTEGER DEFAULT 0
+    role ENUM('USER', 'MOD', 'ADMIN') DEFAULT 'USER',
+    reputation_points INT DEFAULT 0
 );
 
 CREATE TABLE category (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
-    type VARCHAR(50) NOT NULL CHECK (type IN ('DOCUMENT', 'SUBJECT'))
+    type ENUM('DOCUMENT', 'SUBJECT') NOT NULL
 );
+
 CREATE TABLE documents (
     id VARCHAR(36) PRIMARY KEY,
     uploader_id VARCHAR(36),
@@ -24,9 +25,9 @@ CREATE TABLE documents (
     file_format VARCHAR(10),
     school_tag VARCHAR(150),
     academic_year VARCHAR(20),
-    category_id INTEGER,
-    status VARCHAR(20) DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
-    downloads_count INTEGER DEFAULT 0,
+    category_id INT,
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+    downloads_count INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (uploader_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE SET NULL
@@ -36,7 +37,7 @@ CREATE INDEX idx_document_title ON documents(title);
 CREATE INDEX idx_document_school_tag ON documents(school_tag);
 
 CREATE TABLE community_review (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     document_id VARCHAR(36),
     user_id VARCHAR(36),
     rating SMALLINT NOT NULL CHECK (rating >= 1 AND rating <= 5),

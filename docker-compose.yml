@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: tailieufree_web
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      # Lưu trữ tài liệu thực tế của người dùng ngoài container [cite: 2026-03-07]
+      - ./uploads:/app/uploads
+    # Đọc cấu hình từ file .env để bảo mật [cite: 2026-03-07]
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: tailieufree_db
+    restart: always
+    # Sử dụng biến môi trường từ .env thay vì viết cứng mật khẩu [cite: 2026-03-07]
+    env_file:
+      - .env
+    environment:
+      # Các biến này phải khớp với tên biến trong file .env của bạn [cite: 2026-03-07]
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      # Tự động nạp schema.sql khi khởi tạo [cite: 2026-03-07]
+      - ./database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:

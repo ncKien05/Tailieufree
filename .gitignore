@@ -1,0 +1,43 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.python-version
+
+# --- Môi trường ảo ---
+venv/
+env/
+.venv/
+ENV/
+
+# --- Bảo mật ---
+.env
+instance/
+.webassets-cache
+
+# --- Dữ liệu người dùng ---
+uploads/
+media/
+
+# --- Database---
+*.db
+*.sqlite3
+
+# --- IDE & System ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# --- Phân phối/Đóng gói ---
+dist/
+build/
+*.egg-info/
+
+# Chặn các file backup dữ liệu thực tế
+database/*.sql
+# Ngoại lệ: Vẫn cho phép đẩy file cấu trúc lên
+!database/schema.sql
+!database/seed.sql
