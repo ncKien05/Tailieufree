@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+<!--
+    admin/dashboard.html - Trang Dashboard tổng quan Admin
+    Hiển thị thống kê hệ thống và các tài liệu cần duyệt gấp
+-->
+
+{% block title %}Admin Dashboard - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="admin-header">
+        <h1>⚙ Admin Dashboard</h1>
+        <p>Xin chào, <strong>{{ current_user.full_name }}</strong>!</p>
+    </div>
+
+    <!-- ================================================
+         THỐNG KÊ NHANH - Các card số liệu
+         ================================================ -->
+    <div class="stats-grid">
+        <div class="stat-card stat-blue">
+            <div class="stat-number">{{ stats.total_users }}</div>
+            <div class="stat-label">👤 Tổng Người Dùng</div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-number">{{ stats.approved_docs }}</div>
+            <div class="stat-label">✅ Tài Liệu Đã Duyệt</div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-number">{{ stats.pending_docs }}</div>
+            <div class="stat-label">⏳ Đang Chờ Duyệt</div>
+        </div>
+        <div class="stat-card stat-red">
+            <div class="stat-number">{{ stats.rejected_docs }}</div>
+            <div class="stat-label">❌ Đã Từ Chối</div>
+        </div>
+        <div class="stat-card stat-purple">
+            <div class="stat-number">{{ stats.total_docs }}</div>
+            <div class="stat-label">📄 Tổng Tài Liệu</div>
+        </div>
+        <div class="stat-card stat-gray">
+            <div class="stat-number">{{ stats.banned_users }}</div>
+            <div class="stat-label">🔒 Tài Khoản Bị Khóa</div>
+        </div>
+    </div>
+
+    <!-- Menu điều hướng Admin nhanh -->
+    <div class="admin-nav">
+        <a href="{{ url_for('admin.manage_documents', status='PENDING') }}"
+           class="admin-nav-btn btn-orange">
+            ⏳ Kiểm Duyệt Tài Liệu
+            {% if stats.pending_docs > 0 %}
+                <span class="badge-count">{{ stats.pending_docs }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('admin.manage_users') }}" class="admin-nav-btn btn-blue">
+            👥 Quản Lý Người Dùng
+        </a>
+        <a href="{{ url_for('admin.manage_categories') }}" class="admin-nav-btn btn-green">
+            📁 Quản Lý Danh Mục
+        </a>
+    </div>
+
+    <!-- ================================================
+         DANH SÁCH TÀI LIỆU ĐANG CHỜ DUYỆT
+         ================================================ -->
+    {% if recent_pending %}
+    <div class="admin-section">
+        <h2>⏳ Tài Liệu Cần Duyệt Gấp</h2>
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Tên Tài Liệu</th>
+                    <th>Người Upload</th>
+                    <th>Định dạng</th>
+                    <th>Ngày Upload</th>
+                    <th>Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in recent_pending %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('documents.detail', doc_id=doc.id) }}" target="_blank">
+                            {{ doc.title }}
+                        </a>
+                    </td>
+                    <td>{{ doc.uploader.full_name if doc.uploader else 'Ẩn danh' }}</td>
+                    <td><span class="format-badge {{ doc.file_format|lower }}">{{ doc.file_format }}</span></td>
+                    <td>{{ doc.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="table-actions">
+                        <!-- Duyệt - POST request -->
+                        <form method="POST"
+                              action="{{ url_for('admin.approve_document', doc_id=doc.id) }}"
+                              style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-success">✅ Duyệt</button>
+                        </form>
+                        <!-- Từ chối - POST request -->
+                        <form method="POST"
+                              action="{{ url_for('admin.reject_document', doc_id=doc.id) }}"
+                              style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">❌ Từ Chối</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin.manage_documents', status='PENDING') }}"
+           class="btn btn-outline">Xem tất cả →</a>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>✅ Không có tài liệu nào đang chờ duyệt!</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

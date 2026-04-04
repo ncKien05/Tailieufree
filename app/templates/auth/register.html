@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+<!--
+    auth/register.html - Trang Đăng Ký tài khoản
+    Kế thừa base.html, điền vào block content
+-->
+
+{% block title %}Đăng Ký - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-title">📝 Tạo Tài Khoản</h1>
+        <p class="auth-subtitle">Tham gia cộng đồng chia sẻ tài liệu miễn phí</p>
+
+        <!-- Form đăng ký - submit về POST /auth/register -->
+        <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+            <!-- Token CSRF do Flask-WTF tự động tạo - bắt buộc phải có -->
+            {{ form.hidden_tag() }}
+
+            <!-- Trường: Họ và tên -->
+            <div class="form-group">
+                {{ form.full_name.label }}
+                {{ form.full_name(class="form-control", placeholder="Nguyễn Văn A") }}
+                {% for error in form.full_name.errors %}
+                    <span class="error-msg">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <!-- Trường: Email -->
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(class="form-control", placeholder="email@example.com") }}
+                {% for error in form.email.errors %}
+                    <span class="error-msg">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <!-- Trường: Mật khẩu -->
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class="form-control", placeholder="Ít nhất 6 ký tự") }}
+                {% for error in form.password.errors %}
+                    <span class="error-msg">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <!-- Trường: Xác nhận mật khẩu -->
+            <div class="form-group">
+                {{ form.confirm_password.label }}
+                {{ form.confirm_password(class="form-control", placeholder="Nhập lại mật khẩu") }}
+                {% for error in form.confirm_password.errors %}
+                    <span class="error-msg">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            {{ form.submit(class="btn btn-primary btn-full") }}
+        </form>
+
+        <p class="auth-link">
+            Đã có tài khoản? <a href="{{ url_for('auth.login') }}">Đăng nhập ngay</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

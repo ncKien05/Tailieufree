@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+<!--
+    admin/categories.html - Trang quản lý danh mục (Admin)
+    Thêm / Sửa / Xóa danh mục môn học và loại tài liệu
+-->
+
+{% block title %}Quản Lý Danh Mục - Admin{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="section-header">
+        <h1>📁 Quản Lý Danh Mục</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">← Dashboard</a>
+    </div>
+
+    <!-- ================================================
+         FORM THÊM DANH MỤC MỚI
+         ================================================ -->
+    <div class="card add-form">
+        <h2>➕ Thêm Danh Mục Mới</h2>
+        <form method="POST" action="{{ url_for('admin.add_category') }}" class="inline-form">
+            {{ form.hidden_tag() }}
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.name.label }}
+                    {{ form.name(class="form-control", placeholder="VD: Giải Tích") }}
+                    {% for e in form.name.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.type.label }}
+                    {{ form.type(class="form-control") }}
+                </div>
+                {{ form.submit(class="btn btn-success align-end") }}
+            </div>
+        </form>
+    </div>
+
+    <!-- ================================================
+         DANH SÁCH DANH MỤC HIỆN CÓ
+         ================================================ -->
+    {% if categories %}
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên Danh Mục</th>
+                <th>Loại</th>
+                <th>Số Tài Liệu</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in categories %}
+            <tr>
+                <td>{{ cat.id }}</td>
+                <td>{{ cat.name }}</td>
+                <td>
+                    {% if cat.type == 'SUBJECT' %}
+                        <span class="badge badge-mod">Môn Học</span>
+                    {% else %}
+                        <span class="badge badge-user">Loại TL</span>
+                    {% endif %}
+                </td>
+                <td>{{ cat.documents|length }}</td>
+                <td class="table-actions">
+                    <!-- Form sửa nhanh (inline) -->
+                    <button class="btn btn-sm btn-outline"
+                            onclick="toggleEditForm({{ cat.id }})">✏ Sửa</button>
+
+                    <!-- Form xóa danh mục -->
+                    <form method="POST"
+                          action="{{ url_for('admin.delete_category', cat_id=cat.id) }}"
+                          style="display:inline"
+                          onsubmit="return confirm('Xóa danh mục {{ cat.name }}? Tài liệu thuộc danh mục này sẽ không có danh mục.')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-danger">🗑 Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            <!-- Form sửa (ẩn, toggle khi nhấn nút Sửa) -->
+            <tr id="edit-form-{{ cat.id }}" class="edit-row" style="display:none">
+                <td colspan="5">
+                    <form method="POST"
+                          action="{{ url_for('admin.edit_category', cat_id=cat.id) }}"
+                          class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-row">
+                            <input type="text" name="name" class="form-control"
+                                   value="{{ cat.name }}" placeholder="Tên danh mục">
+                            <select name="type" class="form-control">
+                                <option value="SUBJECT" {% if cat.type == 'SUBJECT' %}selected{% endif %}>Môn Học</option>
+                                <option value="DOCUMENT" {% if cat.type == 'DOCUMENT' %}selected{% endif %}>Loại TL</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">💾 Lưu</button>
+                            <button type="button" class="btn btn-outline"
+                                    onclick="toggleEditForm({{ cat.id }})">Hủy</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><p>Chưa có danh mục nào.</p></div>
+    {% endif %}
+</div>
+
+<!-- Script toggle form sửa inline -->
+<script>
+function toggleEditForm(catId) {
+    const row = document.getElementById('edit-form-' + catId);
+    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+</script>
+{% endblock %}

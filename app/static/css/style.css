@@ -1,0 +1,1168 @@
+/* ============================================================
+   style.css - CSS chính cho TailLieuFree
+   Thiết kế: đơn giản, sạch sẽ, dễ đọc - đủ để test chức năng
+   ============================================================ */
+
+/* --- Reset & Base --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar {
+    background: #1e3a5f;
+    color: white;
+    padding: 0 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 60px;
+}
+
+.nav-brand {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.nav-brand:hover {
+    text-decoration: none;
+    color: #93c5fd;
+}
+
+.nav-search {
+    flex: 1;
+    display: flex;
+    max-width: 400px;
+}
+
+.nav-search input {
+    flex: 1;
+    padding: .4rem .8rem;
+    border: none;
+    border-radius: 4px 0 0 4px;
+    outline: none;
+}
+
+.nav-search button {
+    padding: .4rem .8rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: .5rem;
+    align-items: center;
+}
+
+.nav-menu a {
+    color: #cbd5e1;
+    padding: .4rem .7rem;
+    border-radius: 4px;
+    font-size: .9rem;
+}
+
+.nav-menu a:hover {
+    background: rgba(255, 255, 255, .1);
+    color: white;
+    text-decoration: none;
+}
+
+.nav-menu .btn-upload {
+    background: #16a34a;
+    color: white;
+}
+
+.nav-menu .btn-upload:hover {
+    background: #15803d;
+}
+
+.nav-menu .btn-register {
+    background: #2563eb;
+    color: white;
+}
+
+.nav-menu .btn-register:hover {
+    background: #1d4ed8;
+}
+
+.nav-menu .admin-link {
+    color: #fbbf24 !important;
+}
+
+/* Dropdown */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+    min-width: 180px;
+    list-style: none;
+    padding: .4rem 0;
+    z-index: 999;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu a {
+    color: #333;
+    padding: .5rem 1rem;
+    display: block;
+    font-size: .9rem;
+}
+
+.dropdown-menu a:hover {
+    background: #f0f4ff;
+    text-decoration: none;
+}
+
+.dropdown-menu .divider {
+    border-top: 1px solid #e5e7eb;
+    margin: .3rem 0;
+}
+
+/* Avatar nhỏ trong navbar */
+.nav-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+}
+
+/* ============================================================
+   FLASH MESSAGES
+   ============================================================ */
+.flash-container {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+}
+
+.alert {
+    padding: .8rem 1rem;
+    border-radius: 6px;
+    margin-bottom: .5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .9rem;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-info {
+    background: #dbeafe;
+    color: #1e40af;
+    border-left: 4px solid #3b82f6;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: inherit;
+}
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main-content {
+    flex: 1;
+}
+
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.page-container.narrow {
+    max-width: 640px;
+}
+
+.page-subtitle {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+    font-size: 1.3rem;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+    display: inline-block;
+    padding: .5rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: opacity .15s;
+    text-decoration: none;
+}
+
+.btn:hover {
+    opacity: .85;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-success {
+    background: #16a34a;
+    color: white;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.btn-outline:hover {
+    background: #f3f4f6;
+}
+
+.btn-full {
+    width: 100%;
+    text-align: center;
+    display: block;
+}
+
+.btn-lg {
+    padding: .7rem 1.8rem;
+    font-size: 1rem;
+}
+
+.btn-sm {
+    padding: .3rem .7rem;
+    font-size: .8rem;
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: .4rem;
+    font-size: .9rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: .6rem .9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: .95rem;
+    transition: border-color .15s;
+    background: white;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+
+textarea.form-control {
+    resize: vertical;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-check {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.form-checkbox {
+    width: auto;
+}
+
+.form-actions {
+    display: flex;
+    gap: .8rem;
+    margin-top: 1.5rem;
+}
+
+.error-msg {
+    color: #dc2626;
+    font-size: .82rem;
+    display: block;
+    margin-top: .2rem;
+}
+
+.file-upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 6px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.file-input {
+    width: 100%;
+    margin-bottom: .5rem;
+}
+
+.file-hint {
+    color: #6b7280;
+    font-size: .85rem;
+}
+
+.align-end {
+    align-self: flex-end;
+}
+
+/* ============================================================
+   AUTH PAGES (Đăng ký / Đăng nhập)
+   ============================================================ */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 1rem;
+    min-height: calc(100vh - 120px);
+}
+
+.auth-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, .1);
+}
+
+.auth-title {
+    font-size: 1.6rem;
+    margin-bottom: .3rem;
+    text-align: center;
+}
+
+.auth-subtitle {
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 1.8rem;
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 1.2rem;
+    color: #6b7280;
+    font-size: .9rem;
+}
+
+/* ============================================================
+   HERO SECTION (Trang chủ)
+   ============================================================ */
+.hero-section {
+    background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    color: white;
+    text-align: center;
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.hero-section h1 {
+    font-size: 2rem;
+    margin-bottom: .5rem;
+}
+
+.hero-section p {
+    font-size: 1.1rem;
+    opacity: .9;
+}
+
+/* ============================================================
+   SEARCH BOX
+   ============================================================ */
+.search-box {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+}
+
+.search-box h2 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.filter-row {
+    display: flex;
+    gap: .8rem;
+    flex-wrap: wrap;
+}
+
+.filter-row .form-control {
+    flex: 1;
+    min-width: 180px;
+}
+
+.filter-row .btn {
+    align-self: flex-end;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   DOCUMENT GRID (Lưới tài liệu trang chủ)
+   ============================================================ */
+.doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.doc-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+    display: flex;
+    gap: 1rem;
+    transition: box-shadow .2s;
+}
+
+.doc-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+}
+
+.doc-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.doc-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.doc-title a {
+    color: #1e3a5f;
+    font-weight: 600;
+    font-size: .95rem;
+}
+
+.doc-title a:hover {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.doc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin: .5rem 0;
+}
+
+.tag {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: .2rem .6rem;
+    border-radius: 20px;
+    font-size: .75rem;
+}
+
+.doc-uploader {
+    font-size: .8rem;
+    color: #6b7280;
+}
+
+.doc-actions {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.pagination {
+    display: flex;
+    gap: .4rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+.page-btn {
+    padding: .4rem .9rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    font-size: .9rem;
+}
+
+.page-btn:hover {
+    background: #f3f4f6;
+    text-decoration: none;
+}
+
+.page-btn.active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+.page-ellipsis {
+    padding: .4rem .5rem;
+    color: #6b7280;
+}
+
+/* ============================================================
+   DOCUMENT DETAIL
+   ============================================================ */
+.breadcrumb {
+    color: #6b7280;
+    font-size: .9rem;
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb a {
+    color: #2563eb;
+}
+
+.detail-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .detail-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.doc-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.doc-format-badge {
+    padding: .4rem .8rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.doc-format-badge.pdf {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.doc-format-badge.docx {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.doc-format-badge.pptx {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.doc-meta-full {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    margin-bottom: 1.5rem;
+}
+
+.meta-item {
+    display: flex;
+    gap: .8rem;
+    font-size: .95rem;
+}
+
+.meta-label {
+    font-weight: 600;
+    min-width: 130px;
+    color: #374151;
+}
+
+.doc-description {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.doc-description h3 {
+    margin-bottom: .8rem;
+}
+
+.action-row {
+    display: flex;
+    gap: .8rem;
+    flex-wrap: wrap;
+}
+
+/* Reviews / Đánh giá */
+.detail-sidebar {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+}
+
+.detail-sidebar h3 {
+    margin-bottom: 1rem;
+}
+
+.review-item {
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: .3rem;
+}
+
+.stars {
+    color: #f59e0b;
+}
+
+.review-comment {
+    color: #374151;
+    font-size: .9rem;
+    margin: .3rem 0;
+}
+
+.review-date {
+    color: #9ca3af;
+    font-size: .8rem;
+}
+
+.no-reviews {
+    color: #6b7280;
+    font-size: .9rem;
+}
+
+.review-form { margin-bottom: 1.2rem; }
+.review-hint { color: #6b7280; font-size: .87rem; margin-bottom: 1rem; }
+
+/* ============================================================
+   STATUS & FORMAT BADGES
+   ============================================================ */
+.status-badge {
+    padding: .2rem .6rem;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.status-approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.format-badge {
+    padding: .15rem .5rem;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.format-badge.pdf {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.format-badge.docx {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.format-badge.pptx {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge {
+    padding: .2rem .6rem;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.badge-admin {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-mod {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-user {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+}
+
+.doc-table th {
+    background: #1e3a5f;
+    color: white;
+    padding: .8rem 1rem;
+    text-align: left;
+    font-size: .85rem;
+}
+
+.doc-table td {
+    padding: .7rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: .9rem;
+    vertical-align: middle;
+}
+
+.doc-table tr:last-child td {
+    border-bottom: none;
+}
+
+.doc-table tr:hover td {
+    background: #f9fafb;
+}
+
+.doc-table .table-actions {
+    display: flex;
+    gap: .4rem;
+    align-items: center;
+}
+
+.row-banned td {
+    background: #fff7ed;
+    color: #6b7280;
+}
+
+/* ============================================================
+   PROFILE
+   ============================================================ */
+.profile-header {
+    display: flex;
+    gap: 2rem;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+    align-items: flex-start;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #2563eb;
+}
+
+.profile-avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.profile-info h1 {
+    font-size: 1.5rem;
+    margin-bottom: .3rem;
+}
+
+.profile-email {
+    color: #6b7280;
+    margin-bottom: .5rem;
+}
+
+.profile-bio {
+    color: #374151;
+    font-style: italic;
+    margin: .5rem 0;
+}
+
+.profile-joined {
+    color: #9ca3af;
+    font-size: .85rem;
+}
+
+.profile-actions {
+    display: flex;
+    gap: .8rem;
+    margin-top: 1rem;
+}
+
+.profile-docs {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+}
+
+.avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin-bottom: .5rem;
+}
+
+/* ============================================================
+   ADMIN
+   ============================================================ */
+.admin-header {
+    margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+    font-size: 1.8rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: .85rem;
+    opacity: .9;
+}
+
+.stat-blue {
+    background: #2563eb;
+}
+
+.stat-green {
+    background: #16a34a;
+}
+
+.stat-orange {
+    background: #f59e0b;
+}
+
+.stat-red {
+    background: #dc2626;
+}
+
+.stat-purple {
+    background: #7c3aed;
+}
+
+.stat-gray {
+    background: #6b7280;
+}
+
+.admin-nav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-nav-btn {
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    transition: opacity .15s;
+}
+
+.admin-nav-btn:hover {
+    opacity: .85;
+    text-decoration: none;
+}
+
+.admin-nav-btn.btn-orange {
+    background: #f59e0b;
+}
+
+.admin-nav-btn.btn-blue {
+    background: #2563eb;
+}
+
+.admin-nav-btn.btn-green {
+    background: #16a34a;
+}
+
+.badge-count {
+    background: white;
+    color: #dc2626;
+    border-radius: 20px;
+    padding: .1rem .5rem;
+    font-size: .8rem;
+}
+
+.admin-section {
+    margin-top: 2rem;
+}
+
+.admin-section h2 {
+    margin-bottom: 1rem;
+}
+
+.tab-bar {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: .5rem;
+}
+
+.tab {
+    padding: .5rem 1rem;
+    border-radius: 6px 6px 0 0;
+    color: #6b7280;
+    border: 1px solid transparent;
+}
+
+.tab:hover {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.tab.active {
+    color: #2563eb;
+    font-weight: 600;
+    border-color: #e5e7eb #e5e7eb #fff;
+    background: white;
+    border-bottom: 2px solid #2563eb;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+    margin-bottom: 2rem;
+}
+
+.card h2 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.edit-row td {
+    background: #f0f4ff;
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6b7280;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+/* ============================================================
+   ERROR PAGES
+   ============================================================ */
+.error-page {
+    text-align: center;
+    padding: 5rem 2rem;
+}
+
+.error-page h1 {
+    font-size: 4rem;
+    margin-bottom: .5rem;
+}
+
+.error-page h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+.error-page p {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+    background: #1e3a5f;
+    color: #94a3b8;
+    padding: 1.5rem;
+    text-align: center;
+    font-size: .85rem;
+    margin-top: auto;
+}
+
+.footer p+p {
+    margin-top: .3rem;
+}
+
+/* ============================================================
+   TEXT UTILITIES
+   ============================================================ */
+.text-muted {
+    color: #9ca3af;
+    font-size: .85rem;
+}

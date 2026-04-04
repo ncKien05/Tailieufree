@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<!--
+    base.html - Template gốc (Base Template)
+    Tất cả các trang khác kế thừa từ template này bằng Jinja2 inheritance.
+    Chứa: Navbar, Flash messages, Footer, và các block để override.
+-->
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TailLieuFree - Chia sẻ tài liệu học tập miễn phí cho sinh viên">
+    <title>{% block title %}TailLieuFree{% endblock %}</title>
+    <!-- CSS tùy chỉnh của dự án -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- ====================================================
+     NAVBAR - Thanh điều hướng chính
+     Hiển thị khác nhau tùy theo trạng thái đăng nhập
+     ==================================================== -->
+<nav class="navbar">
+    <div class="nav-container">
+        <!-- Logo / Brand -->
+        <a href="{{ url_for('documents.index') }}" class="nav-brand">
+            📚 TailLieuFree
+        </a>
+
+        <!-- Search bar nhanh -->
+        <form class="nav-search" action="{{ url_for('documents.search') }}" method="GET">
+            <input type="text" name="q" placeholder="Tìm kiếm tài liệu..."
+                   value="{{ request.args.get('q', '') }}">
+            <button type="submit">🔍</button>
+        </form>
+
+        <!-- Menu điều hướng -->
+        <ul class="nav-menu">
+            <li><a href="{{ url_for('documents.index') }}">Trang Chủ</a></li>
+
+            {% if current_user.is_authenticated %}
+                <!-- Menu dành cho người đã đăng nhập -->
+                <li><a href="{{ url_for('documents.upload') }}" class="btn-upload">⬆ Upload</a></li>
+                <li class="dropdown">
+                    <a href="#">
+                        <!-- Hiển thị avatar hoặc icon mặc định -->
+                        {% if current_user.avatar_url %}
+                            <img src="{{ url_for('static', filename='uploads/' + current_user.avatar_url) }}"
+                                 class="nav-avatar" alt="Avatar">
+                        {% else %}
+                            👤
+                        {% endif %}
+                        {{ current_user.full_name }}
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('profile.profile') }}">Hồ Sơ</a></li>
+                        <li><a href="{{ url_for('profile.my_documents') }}">Tài Liệu Của Tôi</a></li>
+                        <li><a href="{{ url_for('profile.edit_profile') }}">Chỉnh Sửa Hồ Sơ</a></li>
+                        <li><a href="{{ url_for('profile.change_password') }}">Đổi Mật Khẩu</a></li>
+                        <!-- Chỉ hiện Admin Dashboard nếu là Admin -->
+                        {% if current_user.is_admin() %}
+                            <li class="divider"></li>
+                            <li><a href="{{ url_for('admin.dashboard') }}" class="admin-link">⚙ Admin</a></li>
+                        {% endif %}
+                        <li class="divider"></li>
+                        <li><a href="{{ url_for('auth.logout') }}">🚪 Đăng Xuất</a></li>
+                    </ul>
+                </li>
+            {% else %}
+                <!-- Menu dành cho khách vãng lai -->
+                <li><a href="{{ url_for('auth.login') }}">Đăng Nhập</a></li>
+                <li><a href="{{ url_for('auth.register') }}" class="btn-register">Đăng Ký</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<!-- ====================================================
+     FLASH MESSAGES - Thông báo hệ thống
+     Hiển thị tạm thời sau mỗi action (thêm/xóa/lỗi...)
+     ==================================================== -->
+<div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                    <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<!-- ====================================================
+     MAIN CONTENT - Block chính để các trang con điền vào
+     ==================================================== -->
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ====================================================
+     FOOTER
+     ==================================================== -->
+<footer class="footer">
+    <div class="footer-container">
+        <p>© 2025 TailLieuFree - Chia sẻ tài liệu học tập miễn phí 📚</p>
+        <p>Thực hiện bởi nhóm sinh viên | Môn học: Lập Trình Python</p>
+    </div>
+</footer>
+
+</body>
+</html>
