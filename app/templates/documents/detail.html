@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ doc.title }} - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+        <a href="{{ url_for('documents.index') }}">Trang Chủ</a> »
+        <span>{{ doc.title }}</span>
+    </nav>
+
+    <div class="detail-layout">
+
+        <!-- ====== THÔNG TIN TÀI LIỆU ====== -->
+        <div class="detail-main">
+            <div class="doc-header">
+                <div class="doc-format-badge {{ doc.file_format|lower }}">{{ doc.file_format }}</div>
+                <div>
+                    <h1>{{ doc.title }}</h1>
+                    {% if is_owner or current_user.is_authenticated and current_user.is_admin() %}
+                        <span class="status-badge status-{{ doc.status|lower }}">{{ doc.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="doc-meta-full">
+                <div class="meta-item">
+                    <span class="meta-label">👤 Người đăng:</span>
+                    <span>{{ doc.uploader.full_name if doc.uploader else 'Ẩn danh' }}</span>
+                </div>
+                {% if doc.category %}
+                <div class="meta-item">
+                    <span class="meta-label">📁 Danh mục:</span>
+                    <span>{{ doc.category.name }}</span>
+                </div>
+                {% endif %}
+                {% if doc.school_tag %}
+                <div class="meta-item">
+                    <span class="meta-label">🏫 Trường:</span>
+                    <span>{{ doc.school_tag }}</span>
+                </div>
+                {% endif %}
+                {% if doc.academic_year %}
+                <div class="meta-item">
+                    <span class="meta-label">📅 Năm học:</span>
+                    <span>{{ doc.academic_year }}</span>
+                </div>
+                {% endif %}
+                <div class="meta-item">
+                    <span class="meta-label">⬇ Lượt tải:</span>
+                    <span>{{ doc.downloads_count }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">📆 Ngày đăng:</span>
+                    <span>{{ doc.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                </div>
+            </div>
+
+            {% if doc.description %}
+            <div class="doc-description">
+                <h3>📝 Mô tả</h3>
+                <p>{{ doc.description }}</p>
+            </div>
+            {% endif %}
+
+            <div class="action-row">
+                {% if doc.status == 'APPROVED' %}
+                    <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="btn btn-primary btn-lg">
+                        ⬇ Tải Xuống ({{ doc.file_format }})
+                    </a>
+                {% endif %}
+                {% if is_owner %}
+                    <a href="{{ url_for('profile.edit_document', doc_id=doc.id) }}" class="btn btn-outline">✏ Chỉnh Sửa</a>
+                    <form method="POST" action="{{ url_for('profile.delete_document', doc_id=doc.id) }}"
+                          style="display:inline;" onsubmit="return confirm('Xóa tài liệu này?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger">🗑 Xóa</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ====== ĐÁNH GIÁ ====== -->
+        <div class="detail-sidebar">
+            <h3>⭐ Đánh Giá ({{ reviews|length }})</h3>
+
+            <!-- Form gửi đánh giá -->
+            {% if can_review and review_form %}
+            <form method="POST" action="{{ url_for('documents.submit_review', doc_id=doc.id) }}" class="review-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label for="rating">Số sao</label>
+                    <select name="rating" id="rating" class="form-control" required>
+                        <option value="">-- Chọn --</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Xuất sắc</option>
+                        <option value="4">⭐⭐⭐⭐ Tốt</option>
+                        <option value="3">⭐⭐⭐ Bình thường</option>
+                        <option value="2">⭐⭐ Tệ</option>
+                        <option value="1">⭐ Rất tệ</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="comment">Nhận xét</label>
+                    <textarea name="comment" id="comment" class="form-control" rows="3"
+                              maxlength="1000" placeholder="Viết nhận xét..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-warning btn-full">Gửi Đánh Giá</button>
+            </form>
+
+            {% elif not current_user.is_authenticated %}
+            <p class="review-hint"><a href="{{ url_for('auth.login') }}">Đăng nhập</a> để đánh giá.</p>
+
+            {% elif is_owner %}
+            <p class="review-hint">Bạn không thể tự đánh giá tài liệu của mình.</p>
+
+            {% elif user_review %}
+            <p class="review-hint">✅ Bạn đã đánh giá {{ user_review.rating }}⭐ cho tài liệu này.</p>
+            {% endif %}
+
+            <!-- Danh sách đánh giá -->
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="review-item">
+                    <div class="review-header">
+                        <strong>{{ review.reviewer.full_name if review.reviewer else 'Ẩn danh' }}</strong>
+                        <span class="stars">
+                            {% for i in range(review.rating) %}⭐{% endfor %}
+                        </span>
+                    </div>
+                    {% if review.comment %}
+                        <p class="review-comment">{{ review.comment }}</p>
+                    {% endif %}
+                    <small class="review-date">{{ review.created_at.strftime('%d/%m/%Y') }}</small>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-reviews">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

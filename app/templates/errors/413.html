@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}413 - File quá lớn{% endblock %}
+{% block content %}
+<div class="error-page">
+    <h1>📦 413</h1>
+    <h2>File Quá Lớn</h2>
+    <p>File bạn upload vượt quá giới hạn 50MB cho phép.</p>
+    <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Thử Lại</a>
+</div>
+{% endblock %}

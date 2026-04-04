@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+<!--
+    admin/users.html - Trang quản lý người dùng (Admin)
+    Xem danh sách, khóa/mở khóa tài khoản
+-->
+
+{% block title %}Quản Lý Người Dùng - Admin{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="section-header">
+        <h1>👥 Quản Lý Người Dùng</h1>
+        <div>
+            <!-- Toggle hiển thị tài khoản bị khóa -->
+            {% if show_banned %}
+                <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline">Xem Tất Cả</a>
+            {% else %}
+                <a href="{{ url_for('admin.manage_users', banned=1) }}" class="btn btn-warning">
+                    🔒 Xem Bị Khóa
+                </a>
+            {% endif %}
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">← Dashboard</a>
+        </div>
+    </div>
+
+    {% if users.items %}
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Họ Tên</th>
+                <th>Email</th>
+                <th>Trường / Ngành</th>
+                <th>Vai Trò</th>
+                <th>Tài liệu</th>
+                <th>Trạng Thái</th>
+                <th>Ngày Tham Gia</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users.items %}
+            <tr class="{% if user.is_banned %}row-banned{% endif %}">
+                <td>{{ user.full_name or '-' }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {{ user.school or '' }}
+                    {% if user.school and user.major %} / {% endif %}
+                    {{ user.major or '' }}
+                    {% if not user.school and not user.major %}-{% endif %}
+                </td>
+                <td>
+                    {% if user.role == 'ADMIN' %}
+                        <span class="badge badge-admin">ADMIN</span>
+                    {% elif user.role == 'MOD' %}
+                        <span class="badge badge-mod">MOD</span>
+                    {% else %}
+                        <span class="badge badge-user">USER</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.documents|length }}</td>
+                <td>
+                    {% if user.is_banned %}
+                        <span class="status-badge status-rejected">🔒 Bị Khóa</span>
+                    {% else %}
+                        <span class="status-badge status-approved">✅ Hoạt động</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '-' }}</td>
+                <td class="table-actions">
+                    <!-- Không cho phép admin tự khóa chính mình -->
+                    {% if user.id != current_user.id %}
+                        {% if user.is_banned %}
+                            <!-- Mở khóa tài khoản -->
+                            <form method="POST"
+                                  action="{{ url_for('admin.unban_user', user_id=user.id) }}"
+                                  style="display:inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-success" title="Mở khóa">🔓 Mở Khóa</button>
+                            </form>
+                        {% else %}
+                            <!-- Khóa tài khoản -->
+                            <form method="POST"
+                                  action="{{ url_for('admin.ban_user', user_id=user.id) }}"
+                                  style="display:inline"
+                                  onsubmit="return confirm('Khóa tài khoản {{ user.email }}?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-danger" title="Khóa">🔒 Khóa</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-muted">(Chính bạn)</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Phân trang -->
+    {% if users.pages > 1 %}
+    <div class="pagination">
+        {% if users.has_prev %}
+            <a href="{{ url_for('admin.manage_users', page=users.prev_num) }}" class="page-btn">← Trước</a>
+        {% endif %}
+        <span>{{ users.page }}/{{ users.pages }}</span>
+        {% if users.has_next %}
+            <a href="{{ url_for('admin.manage_users', page=users.next_num) }}" class="page-btn">Sau →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state"><p>Không có người dùng nào.</p></div>
+    {% endif %}
+</div>
+{% endblock %}

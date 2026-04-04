@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+<!-- profile/edit_document.html - Sửa thông tin tài liệu  -->
+
+{% block title %}Sửa Tài Liệu - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="page-container narrow">
+    <h1>✏ Sửa Tài Liệu</h1>
+    <p class="page-subtitle">
+        Sau khi chỉnh sửa, tài liệu sẽ về trạng thái <strong>Chờ duyệt</strong> để Admin kiểm tra lại.
+    </p>
+
+    <form method="POST" action="{{ url_for('profile.edit_document', doc_id=doc.id) }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.title.label }}
+            {{ form.title(class="form-control") }}
+            {% for e in form.title.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.description.label }}
+            {{ form.description(class="form-control", rows=4) }}
+        </div>
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('profile.my_documents') }}" class="btn btn-outline">Hủy</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
