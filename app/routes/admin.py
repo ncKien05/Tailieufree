@@ -5,8 +5,9 @@
 # Tất cả route đều yêu cầu quyền ADMIN
 # ============================================================
 
+import os
 from flask import (Blueprint, render_template, redirect, url_for,
-                   flash, request)
+                   flash, request, current_app)
 from flask_login import login_required
 from .. import db
 from ..models import User, Document, Category
@@ -128,13 +129,27 @@ def reject_document(doc_id):
 @admin_required
 def delete_document(doc_id):
     """
-    Xóa tài liệu hoàn toàn khỏi database (bao gồm cả reviews).
+    Xóa tài liệu hoàn toàn khỏi database (bao gồm cả reviews)
+    và xóa file vật lý trên server (không lưu lại bất kỳ thứ gì).
     Dùng khi tài liệu vi phạm nghiêm trọng.
     """
     doc = Document.query.get_or_404(doc_id)
     doc_title = doc.title
+    file_url  = doc.file_url  # Lưu lại đường dẫn trước khi xóa bản ghi
+
+    # 1. Xóa bản ghi khỏi database (cascade sẽ xóa luôn reviews)
     db.session.delete(doc)
     db.session.commit()
+
+    # 2. Xóa file vật lý trên disk (nếu tồn tại)
+    try:
+        upload_folder = current_app.config.get('UPLOAD_FOLDER', '')
+        physical_path = os.path.join(upload_folder, file_url)
+        if os.path.isfile(physical_path):
+            os.remove(physical_path)
+    except Exception:
+        pass  # Không để lỗi file ảnh hưởng luồng chính
+
     flash(f'Đã xóa vĩnh viễn tài liệu: "{doc_title}"', 'danger')
     return redirect(url_for('admin.manage_documents'))
 

@@ -62,7 +62,7 @@
             {{ form.document_file.label }}
             <div class="file-upload-area">
                 {{ form.document_file(class="file-input", accept=".pdf,.docx,.pptx") }}
-                <p class="file-hint">📎 Chấp nhận: PDF, DOCX, PPTX | Tối đa 50MB</p>
+                <p class="file-hint">📎 Chấp nhận: PDF, DOCX, PPTX, XLSX, TXT | Tối đa 50MB</p>
             </div>
             {% for error in form.document_file.errors %}
                 <span class="error-msg">{{ error }}</span>

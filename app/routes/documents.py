@@ -253,10 +253,15 @@ def submit_review(doc_id):
 def download(doc_id):
     """
     Xử lý tải xuống file tài liệu:
-    1. Kiểm tra tài liệu tồn tại và đã được duyệt
-    2. Tăng biến đếm downloads_count lên 1
-    3. Gửi file về cho client
+    1. Yêu cầu đăng nhập - khách vãng lai không được tải
+    2. Kiểm tra tài liệu tồn tại và đã được duyệt
+    3. Tăng biến đếm downloads_count lên 1
+    4. Gửi file về cho client
     """
+    # Kiểm tra đăng nhập trước khi cho tải
+    if not current_user.is_authenticated:
+        flash('Vui lòng đăng nhập để tải tài liệu.', 'warning')
+        return redirect(url_for('auth.login', next=request.url))
     doc = Document.query.get_or_404(doc_id)
 
     # Chỉ cho tải tài liệu đã được duyệt

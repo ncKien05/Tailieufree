@@ -67,8 +67,8 @@ class UploadDocForm(FlaskForm):
     document_file = FileField('Chọn file tài liệu',
                               validators=[
                                   DataRequired(message='Vui lòng chọn file'),
-                                  FileAllowed(['pdf', 'docx', 'pptx'],
-                                              'Chỉ chấp nhận PDF, DOCX, PPTX!')
+                                  FileAllowed(['pdf', 'docx', 'pptx', 'xlsx', 'txt'],
+                                              'Chỉ chấp nhận PDF, DOCX, PPTX, XLSX, TXT!')
                               ])
     submit = SubmitField('Tải Lên')
 

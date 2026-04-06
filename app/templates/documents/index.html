@@ -124,8 +124,13 @@
                 <div class="doc-actions">
                     <a href="{{ url_for('documents.detail', doc_id=doc.id) }}"
                        class="btn btn-sm btn-outline">Xem</a>
-                    <a href="{{ url_for('documents.download', doc_id=doc.id) }}"
-                       class="btn btn-sm btn-primary">⬇ Tải</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('documents.download', doc_id=doc.id) }}"
+                           class="btn btn-sm btn-primary">⬇ Tải</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}"
+                           class="btn btn-sm btn-primary" title="Đăng nhập để tải">🔒 Tải</a>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
