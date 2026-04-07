@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}403 - Không có quyền truy cập{% endblock %}
+{% block content %}
+<div class="error-page">
+    <h1>🚫 403</h1>
+    <h2>Không Có Quyền Truy Cập</h2>
+    <p>Bạn không có quyền xem trang này.</p>
+    <a href="{{ url_for('documents.index') }}" class="btn btn-primary">Về Trang Chủ</a>
+</div>
+{% endblock %}

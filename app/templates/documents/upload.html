@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+<!--
+    documents/upload.html - Trang Upload tài liệu
+    Chỉ hiển thị nếu user đã đăng nhập (enforced bởi @login_required)
+-->
+
+{% block title %}Upload Tài Liệu - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="page-container narrow">
+    <h1>⬆ Tải Tài Liệu Lên</h1>
+    <p class="page-subtitle">
+        Chia sẻ kiến thức - Tài liệu sẽ được kiểm duyệt trước khi hiển thị công khai.
+    </p>
+
+    <!-- Form upload - enctype multipart/form-data bắt buộc khi có file upload -->
+    <form method="POST" action="{{ url_for('documents.upload') }}"
+          enctype="multipart/form-data" class="upload-form">
+        {{ form.hidden_tag() }}
+
+        <!-- Tên tài liệu -->
+        <div class="form-group">
+            {{ form.title.label }}
+            {{ form.title(class="form-control", placeholder="VD: Đề thi Toán Cao Cấp HK1 2023") }}
+            {% for error in form.title.errors %}
+                <span class="error-msg">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Mô tả -->
+        <div class="form-group">
+            {{ form.description.label }}
+            {{ form.description(class="form-control", rows=4,
+               placeholder="Mô tả ngắn về nội dung tài liệu...") }}
+            {% for error in form.description.errors %}
+                <span class="error-msg">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-row">
+            <!-- Danh mục / Môn học -->
+            <div class="form-group">
+                {{ form.category_id.label }}
+                {{ form.category_id(class="form-control") }}
+            </div>
+
+            <!-- Tag trường -->
+            <div class="form-group">
+                {{ form.school_tag.label }}
+                {{ form.school_tag(class="form-control", placeholder="VD: HUST, UET, NEU...") }}
+            </div>
+
+            <!-- Năm học -->
+            <div class="form-group">
+                {{ form.academic_year.label }}
+                {{ form.academic_year(class="form-control", placeholder="VD: 2023-2024") }}
+            </div>
+        </div>
+
+        <!-- Khu vực chọn file - chỉ nhận PDF, DOCX, PPTX -->
+        <div class="form-group">
+            {{ form.document_file.label }}
+            <div class="file-upload-area">
+                {{ form.document_file(class="file-input", accept=".pdf,.docx,.pptx") }}
+                <p class="file-hint">📎 Chấp nhận: PDF, DOCX, PPTX, XLSX, TXT | Tối đa 50MB</p>
+            </div>
+            {% for error in form.document_file.errors %}
+                <span class="error-msg">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('documents.index') }}" class="btn btn-outline">Hủy</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

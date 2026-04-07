@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+<!--
+    documents/index.html - Trang chủ và Trang tìm kiếm
+    Dùng chung cho cả route / (index) và /search (search)
+-->
+
+{% block title %}{{ title }} - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- ================================================
+         HERO SECTION - Banner giới thiệu (chỉ ở trang chủ)
+         ================================================ -->
+    {% if not keyword and not selected_category %}
+    <div class="hero-section">
+        <h1>📚 Chia Sẻ Tài Liệu Miễn Phí</h1>
+        <p>Hàng nghìn tài liệu học tập được chia sẻ bởi sinh viên trên cả nước</p>
+    </div>
+    {% endif %}
+
+    <!-- ================================================
+         BỘ LỌC TÌM KIẾM
+         ================================================ -->
+    <div class="search-box">
+        <h2>🔍 Tìm Kiếm & Lọc Tài Liệu</h2>
+        <form method="GET" action="{{ url_for('documents.search') }}">
+            <div class="filter-row">
+                <!-- Tìm theo từ khóa -->
+                <input type="text" name="q" class="form-control"
+                       placeholder="Nhập tên tài liệu..."
+                       value="{{ keyword or '' }}">
+
+                <!-- Lọc theo danh mục -->
+                <select name="category_id" class="form-control">
+                    <option value="">-- Tất cả danh mục --</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}"
+                            {% if selected_category == cat.id %}selected{% endif %}>
+                            {{ cat.name }} ({{ cat.type }})
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Lọc theo trường -->
+                <input type="text" name="school_tag" class="form-control"
+                       placeholder="Tag trường (vd: HUST)"
+                       value="{{ request.args.get('school_tag', '') }}">
+
+                <!-- Lọc theo năm học -->
+                <input type="text" name="academic_year" class="form-control"
+                       placeholder="Năm học (vd: 2023-2024)"
+                       value="{{ request.args.get('academic_year', '') }}">
+
+                <button type="submit" class="btn btn-primary">Tìm Kiếm</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ================================================
+         DANH SÁCH TÀI LIỆU
+         ================================================ -->
+    <div class="section-header">
+        <h2>
+            {% if keyword %}
+                Kết quả tìm kiếm cho: "<strong>{{ keyword }}</strong>"
+                ({{ documents.total }} kết quả)
+            {% else %}
+                📄 Tài Liệu Mới Nhất
+            {% endif %}
+        </h2>
+
+        <!-- Nút upload - chỉ hiện nếu đã đăng nhập -->
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('documents.upload') }}" class="btn btn-success">
+                ⬆ Upload Tài Liệu
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Grid hiển thị tài liệu -->
+    {% if documents.items %}
+        <div class="doc-grid">
+            {% for doc in documents.items %}
+            <div class="doc-card">
+                <!-- Icon theo định dạng file -->
+                <div class="doc-icon">
+                    {% if doc.file_format == 'PDF' %}📕
+                    {% elif doc.file_format == 'DOCX' %}📘
+                    {% elif doc.file_format == 'PPTX' %}📊
+                    {% else %}📄{% endif %}
+                </div>
+
+                <div class="doc-info">
+                    <!-- Tiêu đề tài liệu - nhấn vào để xem chi tiết -->
+                    <h3 class="doc-title">
+                        <a href="{{ url_for('documents.detail', doc_id=doc.id) }}">
+                            {{ doc.title }}
+                        </a>
+                    </h3>
+
+                    <!-- Thông tin meta -->
+                    <div class="doc-meta">
+                        {% if doc.category %}
+                            <span class="tag">📁 {{ doc.category.name }}</span>
+                        {% endif %}
+                        {% if doc.school_tag %}
+                            <span class="tag">🏫 {{ doc.school_tag }}</span>
+                        {% endif %}
+                        {% if doc.academic_year %}
+                            <span class="tag">📅 {{ doc.academic_year }}</span>
+                        {% endif %}
+                        <span class="tag">⬇ {{ doc.downloads_count }} lượt tải</span>
+                    </div>
+
+                    <!-- Người upload và ngày đăng -->
+                    <p class="doc-uploader">
+                        Đăng bởi: <strong>{{ doc.uploader.full_name if doc.uploader else 'Ẩn danh' }}</strong>
+                        | {{ doc.created_at.strftime('%d/%m/%Y') }}
+                    </p>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="doc-actions">
+                    <a href="{{ url_for('documents.detail', doc_id=doc.id) }}"
+                       class="btn btn-sm btn-outline">Xem</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('documents.download', doc_id=doc.id) }}"
+                           class="btn btn-sm btn-primary">⬇ Tải</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}"
+                           class="btn btn-sm btn-primary" title="Đăng nhập để tải">🔒 Tải</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- PHÂN TRANG -->
+        {% if documents.pages > 1 %}
+        <div class="pagination">
+            {% if documents.has_prev %}
+                <a href="{{ url_for(request.endpoint, page=documents.prev_num, **request.args) }}"
+                   class="page-btn">← Trước</a>
+            {% endif %}
+
+            {% for page_num in documents.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <a href="{{ url_for(request.endpoint, page=page_num, **request.args) }}"
+                       class="page-btn {% if page_num == documents.page %}active{% endif %}">
+                        {{ page_num }}
+                    </a>
+                {% else %}
+                    <span class="page-ellipsis">…</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if documents.has_next %}
+                <a href="{{ url_for(request.endpoint, page=documents.next_num, **request.args) }}"
+                   class="page-btn">Sau →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    {% else %}
+        <!-- Trạng thái rỗng -->
+        <div class="empty-state">
+            <p>😕 Không tìm thấy tài liệu nào.</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">
+                    Hãy là người đầu tiên chia sẻ!
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

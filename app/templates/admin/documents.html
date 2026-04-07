@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+<!--
+    admin/documents.html - Trang kiểm duyệt tài liệu (Admin)
+    Lọc theo trạng thái PENDING / APPROVED / REJECTED
+-->
+
+{% block title %}Quản Lý Tài Liệu - Admin{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="section-header">
+        <h1>📄 Quản Lý Tài Liệu</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">← Dashboard</a>
+    </div>
+
+    <!-- Tab lọc theo trạng thái -->
+    <div class="tab-bar">
+        <a href="{{ url_for('admin.manage_documents', status='PENDING') }}"
+           class="tab {% if status_filter == 'PENDING' %}active{% endif %}">
+            ⏳ Chờ Duyệt
+        </a>
+        <a href="{{ url_for('admin.manage_documents', status='APPROVED') }}"
+           class="tab {% if status_filter == 'APPROVED' %}active{% endif %}">
+            ✅ Đã Duyệt
+        </a>
+        <a href="{{ url_for('admin.manage_documents', status='REJECTED') }}"
+           class="tab {% if status_filter == 'REJECTED' %}active{% endif %}">
+            ❌ Từ Chối
+        </a>
+        <a href="{{ url_for('admin.manage_documents') }}"
+           class="tab {% if status_filter not in ('PENDING','APPROVED','REJECTED') %}active{% endif %}">
+            📋 Tất Cả
+        </a>
+    </div>
+
+    {% if documents.items %}
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Tên Tài Liệu</th>
+                <th>Người Upload</th>
+                <th>Danh mục</th>
+                <th>Định dạng</th>
+                <th>Trạng thái</th>
+                <th>Ngày Upload</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents.items %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('documents.detail', doc_id=doc.id) }}" target="_blank">
+                        {{ doc.title }}
+                    </a>
+                </td>
+                <td>{{ doc.uploader.full_name if doc.uploader else 'Ẩn danh' }}</td>
+                <td>{{ doc.category.name if doc.category else '-' }}</td>
+                <td><span class="format-badge {{ doc.file_format|lower }}">{{ doc.file_format }}</span></td>
+                <td>
+                    <span class="status-badge status-{{ doc.status|lower }}">{{ doc.status }}</span>
+                </td>
+                <td>{{ doc.created_at.strftime('%d/%m/%Y') }}</td>
+                <td class="table-actions">
+                    <!-- Duyệt -->
+                    {% if doc.status != 'APPROVED' %}
+                    <form method="POST"
+                          action="{{ url_for('admin.approve_document', doc_id=doc.id) }}"
+                          style="display:inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-success" title="Duyệt">✅</button>
+                    </form>
+                    {% endif %}
+                    <!-- Từ chối / Ẩn -->
+                    {% if doc.status != 'REJECTED' %}
+                    <form method="POST"
+                          action="{{ url_for('admin.reject_document', doc_id=doc.id) }}"
+                          style="display:inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-warning" title="Từ chối">🚫</button>
+                    </form>
+                    {% endif %}
+                    <!-- Xóa vĩnh viễn -->
+                    <form method="POST"
+                          action="{{ url_for('admin.delete_document', doc_id=doc.id) }}"
+                          style="display:inline"
+                          onsubmit="return confirm('Xóa vĩnh viễn tài liệu này?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-danger" title="Xóa">🗑</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Phân trang -->
+    {% if documents.pages > 1 %}
+    <div class="pagination">
+        {% if documents.has_prev %}
+            <a href="{{ url_for('admin.manage_documents', status=status_filter, page=documents.prev_num) }}"
+               class="page-btn">← Trước</a>
+        {% endif %}
+        <span>{{ documents.page }}/{{ documents.pages }}</span>
+        {% if documents.has_next %}
+            <a href="{{ url_for('admin.manage_documents', status=status_filter, page=documents.next_num) }}"
+               class="page-btn">Sau →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <p>Không có tài liệu nào trong nhóm này.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

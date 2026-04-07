@@ -25,9 +25,14 @@ services:
     env_file:
       - .env
     environment:
-      # Các biến này phải khớp với tên biến trong file .env của bạn [cite: 2026-03-07]
+      # Các biến này phải khớp với tên biến trong file .env của bạn
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
+      # SỬA: Đặt charset mặc định utf8mb4 cho toàn bộ MySQL server
+      # Đảm bảo mọi bảng (kể cả do SQLAlchemy tạo) đều dùng utf8mb4
+      # → tránh lỗi "foreign key incompatible charset"
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
     ports:
       - "3306:3306"
     volumes:

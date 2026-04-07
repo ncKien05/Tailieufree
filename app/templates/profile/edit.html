@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+<!-- profile/edit.html - Chỉnh sửa thông tin hồ sơ -->
+
+{% block title %}Chỉnh Sửa Hồ Sơ - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="page-container narrow">
+    <h1>✏ Chỉnh Sửa Hồ Sơ</h1>
+
+    <form method="POST" action="{{ url_for('profile.edit_profile') }}"
+          enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.full_name.label }}
+            {{ form.full_name(class="form-control") }}
+            {% for e in form.full_name.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.school.label }}
+            {{ form.school(class="form-control", placeholder="VD: Đại học Bách Khoa Hà Nội") }}
+        </div>
+        <div class="form-group">
+            {{ form.major.label }}
+            {{ form.major(class="form-control", placeholder="VD: Công nghệ thông tin") }}
+        </div>
+        <div class="form-group">
+            {{ form.bio.label }}
+            {{ form.bio(class="form-control", rows=4, placeholder="Giới thiệu ngắn về bản thân...") }}
+        </div>
+        <div class="form-group">
+            {{ form.avatar.label }}
+            <!-- Hiện avatar hiện tại nếu có -->
+            {% if current_user.avatar_url %}
+                <img src="{{ url_for('static', filename='uploads/' + current_user.avatar_url) }}"
+                     class="avatar-preview" alt="Avatar hiện tại">
+                <small>Avatar hiện tại - Upload ảnh mới để thay thế</small>
+            {% endif %}
+            {{ form.avatar(class="form-control") }}
+            {% for e in form.avatar.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+        </div>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('profile.profile') }}" class="btn btn-outline">Hủy</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

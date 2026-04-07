@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+<!--
+    profile/profile.html - Trang hồ sơ cá nhân
+    Hiển thị: thông tin user + danh sách tài liệu đã upload
+-->
+
+{% block title %}Hồ Sơ - {{ user.full_name }} - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- ================================================
+         THÔNG TIN CÁ NHÂN
+         ================================================ -->
+    <div class="profile-header">
+        <!-- Avatar -->
+        <div class="profile-avatar-wrap">
+            {% if user.avatar_url %}
+                <img src="{{ url_for('static', filename='uploads/' + user.avatar_url) }}"
+                     class="profile-avatar" alt="Avatar của {{ user.full_name }}">
+            {% else %}
+                <div class="profile-avatar-placeholder">
+                    {{ user.full_name[0]|upper }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Thông tin cơ bản -->
+        <div class="profile-info">
+            <h1>
+                {{ user.full_name }}
+                {% if user.role == 'ADMIN' %}
+                    <span class="badge badge-admin">ADMIN</span>
+                {% elif user.role == 'MOD' %}
+                    <span class="badge badge-mod">MOD</span>
+                {% endif %}
+            </h1>
+            <p class="profile-email">✉ {{ user.email }}</p>
+            {% if user.school %}<p>🏫 {{ user.school }}</p>{% endif %}
+            {% if user.major %}<p>📖 {{ user.major }}</p>{% endif %}
+            {% if user.bio %}<p class="profile-bio">{{ user.bio }}</p>{% endif %}
+            <p class="profile-joined">
+                Tham gia: {{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}
+                | ⭐ {{ user.reputation_points }} điểm uy tín
+            </p>
+
+            <!-- Nút chỉnh sửa hồ sơ -->
+            <div class="profile-actions">
+                <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-outline">
+                    ✏ Chỉnh Sửa Hồ Sơ
+                </a>
+                <a href="{{ url_for('profile.change_password') }}" class="btn btn-outline">
+                    🔑 Đổi Mật Khẩu
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================
+         KHO TÀI LIỆU CÁ NHÂN
+         ================================================ -->
+    <div class="profile-docs">
+        <div class="section-header">
+            <h2>📂 Tài Liệu Đã Chia Sẻ ({{ documents|length }})</h2>
+            <a href="{{ url_for('documents.upload') }}" class="btn btn-success">⬆ Upload Mới</a>
+        </div>
+
+        {% if documents %}
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Tên Tài Liệu</th>
+                    <th>Danh mục</th>
+                    <th>Định dạng</th>
+                    <th>Trạng thái</th>
+                    <th>Lượt tải</th>
+                    <th>Ngày đăng</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documents %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('documents.detail', doc_id=doc.id) }}">
+                            {{ doc.title }}
+                        </a>
+                    </td>
+                    <td>{{ doc.category.name if doc.category else '-' }}</td>
+                    <td><span class="format-badge {{ doc.file_format|lower }}">{{ doc.file_format }}</span></td>
+                    <!-- Màu badge theo trạng thái kiểm duyệt -->
+                    <td>
+                        <span class="status-badge status-{{ doc.status|lower }}">
+                            {% if doc.status == 'PENDING' %}⏳ Chờ duyệt
+                            {% elif doc.status == 'APPROVED' %}✅ Đã duyệt
+                            {% else %}❌ Từ chối{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ doc.downloads_count }}</td>
+                    <td>{{ doc.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td class="table-actions">
+                        <!-- Nút sửa tên tài liệu -->
+                        <a href="{{ url_for('profile.edit_document', doc_id=doc.id) }}"
+                           class="btn btn-sm btn-outline">✏</a>
+                        <!-- Nút xóa - có confirm dialog -->
+                        <form method="POST"
+                              action="{{ url_for('profile.delete_document', doc_id=doc.id) }}"
+                              style="display:inline"
+                              onsubmit="return confirm('Xóa tài liệu này?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>Bạn chưa chia sẻ tài liệu nào.</p>
+            <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">
+                Chia sẻ ngay!
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

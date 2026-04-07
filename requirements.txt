@@ -1,14 +1,29 @@
-# Web Framework
+# ============================================================
+# requirements.txt - Danh sách thư viện cần thiết cho dự án
+# ============================================================
+
+# --- Web Framework ---
 Flask==3.0.3
 
-# Database & ORM
+# --- Database & ORM ---
 Flask-SQLAlchemy==3.1.1
 mysql-connector-python==8.3.0
 
-# Security & Authentication
+# --- Security & Authentication ---
 bcrypt==4.1.2
 Flask-Login==0.6.3
 
-# Environment & Utilities
-python-dotenv==1.0.1
+# --- Form Validation ---
+# THÊM MỚI: Flask-WTF để xử lý và validate form, bảo vệ CSRF
+Flask-WTF==1.2.1
+# THÊM MỚI: email-validator để kiểm tra định dạng email trong form
 email-validator==2.1.1
+
+# --- File Handling ---
+# THÊM MỚI: Werkzeug để xử lý file upload an toàn (secure_filename)
+Werkzeug==3.0.3
+# THÊM MỚI: Pillow để xử lý và resize ảnh đại diện (avatar)
+Pillow==10.3.0
+
+# --- Environment & Utilities ---
+python-dotenv==1.0.1

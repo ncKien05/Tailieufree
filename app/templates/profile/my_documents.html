@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+<!--
+    profile/my_documents.html - Kho tài liệu cá nhân (phân trang)
+-->
+
+{% block title %}Tài Liệu Của Tôi - TailLieuFree{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="section-header">
+        <h1>📂 Tài Liệu Của Tôi</h1>
+        <a href="{{ url_for('documents.upload') }}" class="btn btn-success">⬆ Upload Mới</a>
+    </div>
+
+    {% if documents.items %}
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Tên Tài Liệu</th>
+                <th>Danh mục</th>
+                <th>Định dạng</th>
+                <th>Trạng thái</th>
+                <th>Lượt tải</th>
+                <th>Ngày đăng</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents.items %}
+            <tr>
+                <td><a href="{{ url_for('documents.detail', doc_id=doc.id) }}">{{ doc.title }}</a></td>
+                <td>{{ doc.category.name if doc.category else '-' }}</td>
+                <td><span class="format-badge {{ doc.file_format|lower }}">{{ doc.file_format }}</span></td>
+                <td>
+                    <span class="status-badge status-{{ doc.status|lower }}">
+                        {% if doc.status == 'PENDING' %}⏳ Chờ duyệt
+                        {% elif doc.status == 'APPROVED' %}✅ Đã duyệt
+                        {% else %}❌ Từ chối{% endif %}
+                    </span>
+                </td>
+                <td>{{ doc.downloads_count }}</td>
+                <td>{{ doc.created_at.strftime('%d/%m/%Y') }}</td>
+                <td class="table-actions">
+                    <a href="{{ url_for('profile.edit_document', doc_id=doc.id) }}"
+                       class="btn btn-sm btn-outline">✏</a>
+                    <form method="POST"
+                          action="{{ url_for('profile.delete_document', doc_id=doc.id) }}"
+                          style="display:inline"
+                          onsubmit="return confirm('Xóa tài liệu này?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger">🗑</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Phân trang -->
+    {% if documents.pages > 1 %}
+    <div class="pagination">
+        {% if documents.has_prev %}
+            <a href="{{ url_for('profile.my_documents', page=documents.prev_num) }}" class="page-btn">← Trước</a>
+        {% endif %}
+        <span>Trang {{ documents.page }} / {{ documents.pages }}</span>
+        {% if documents.has_next %}
+            <a href="{{ url_for('profile.my_documents', page=documents.next_num) }}" class="page-btn">Sau →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <p>Bạn chưa chia sẻ tài liệu nào.</p>
+        <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Upload ngay!</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
