@@ -28,7 +28,6 @@ INSERT IGNORE INTO category (name, type) VALUES
     ('Cơ Sở Dữ Liệu',           'SUBJECT'),
     ('Mạng Máy Tính',            'SUBJECT'),
     ('Kinh Tế Vi Mô',            'SUBJECT'),
-    ('Kinh Tế Vĩ Mô',            'SUBJECT'),
     ('Tiếng Anh Chuyên Ngành',  'SUBJECT'),
     ('Triết Học Mác-Lênin',     'SUBJECT'),
     ('Tư Tưởng Hồ Chí Minh',    'SUBJECT'),
