@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS documents (
     academic_year VARCHAR(20),                           -- Năm học (vd: 2023-2024)
     category_id INT,                                     -- Danh mục (FK → category)
     status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING', -- Trạng thái kiểm duyệt
-    downloads_count INT DEFAULT 0,                       -- Số lượt tải xuống
+    download_count INT DEFAULT 0,                        -- Số lượt tải xuống
+    view_count INT DEFAULT 0,                            -- Số lượt xem
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,       -- Ngày upload
     FOREIGN KEY (uploader_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE SET NULL
@@ -57,15 +58,64 @@ CREATE INDEX idx_document_title ON documents(title);
 CREATE INDEX idx_document_school_tag ON documents(school_tag);
 CREATE INDEX idx_document_status ON documents(status);
 
--- Bảng đánh giá cộng đồng (rating + comment)
--- SỬA: Thêm CHARSET=utf8mb4 để comment tiếng Việt hiển thị đúng
-CREATE TABLE IF NOT EXISTS community_review (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    document_id VARCHAR(36),                             -- Tài liệu được đánh giá (FK → documents)
-    user_id VARCHAR(36),                                 -- Người đánh giá (FK → users)
-    rating SMALLINT NOT NULL CHECK (rating >= 1 AND rating <= 5), -- Điểm 1-5 sao
-    comment TEXT,                                        -- Nội dung nhận xét
+-- Bảng bài viết (Blog)
+CREATE TABLE IF NOT EXISTS posts (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content MEDIUMTEXT NOT NULL,
+    tags VARCHAR(255),                                   -- Các tag cách nhau bằng dấu phẩy
+    likes_count INT DEFAULT 0,                           -- Số lượt thích
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng bình luận (Dùng chung cho Post và Document, tách riêng bằng khóa ngoại nullable)
+CREATE TABLE IF NOT EXISTS comments (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id VARCHAR(36) NOT NULL,
+    post_id VARCHAR(36) NULL,                            -- Khóa ngoại đến bảng posts
+    document_id VARCHAR(36) NULL,                        -- Khóa ngoại đến bảng documents
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
+    CHECK (
+        (post_id IS NOT NULL AND document_id IS NULL) OR
+        (post_id IS NULL AND document_id IS NOT NULL)
+    )
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng đánh giá tài liệu (Rating)
+CREATE TABLE IF NOT EXISTS ratings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id VARCHAR(36) NOT NULL,
+    doc_id VARCHAR(36) NOT NULL,                         -- Tài liệu được đánh giá
+    star_value SMALLINT NOT NULL CHECK (star_value >= 1 AND star_value <= 5),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_doc_rating (user_id, doc_id), -- Một user chỉ đánh giá một lần cho một document
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (doc_id) REFERENCES documents(id) ON DELETE CASCADE
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng lưu tài liệu (Bookmarks/Saved)
+CREATE TABLE IF NOT EXISTS bookmarks (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id VARCHAR(36) NOT NULL,
+    doc_id VARCHAR(36) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_doc_bookmark (user_id, doc_id), -- Tránh việc lưu trùng nhiều lần
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (doc_id) REFERENCES documents(id) ON DELETE CASCADE
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Bảng lịch sử tải về (Download History)
+CREATE TABLE IF NOT EXISTS download_history (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id VARCHAR(36) NOT NULL,
+    document_id VARCHAR(36) NOT NULL,
+    downloaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

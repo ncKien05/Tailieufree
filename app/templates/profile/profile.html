@@ -1,126 +1,192 @@
 {% extends 'base.html' %}
 <!--
-    profile/profile.html - Trang hồ sơ cá nhân
-    Hiển thị: thông tin user + danh sách tài liệu đã upload
+    profile.html - Trang hồ sơ cá nhân
 -->
 
 {% block title %}Hồ Sơ - {{ user.full_name }} - TailLieuFree{% endblock %}
 
 {% block content %}
-<div class="page-container">
+<!-- Include Bootstrap CSS for Tabs -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- ================================================
-         THÔNG TIN CÁ NHÂN
-         ================================================ -->
-    <div class="profile-header">
+<div class="container mt-5">
+
+    <!-- THÔNG TIN CÁ NHÂN -->
+    <div class="row align-items-center mb-5 p-4 bg-light rounded shadow-sm">
         <!-- Avatar -->
-        <div class="profile-avatar-wrap">
+        <div class="col-md-3 text-center">
             {% if user.avatar_url %}
-                <img src="{{ url_for('static', filename='uploads/' + user.avatar_url) }}"
-                     class="profile-avatar" alt="Avatar của {{ user.full_name }}">
+                <img src="{{ url_for('uploaded_file', filename=user.avatar_url) }}"
+                     class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;" alt="Avatar">
             {% else %}
-                <div class="profile-avatar-placeholder">
+                <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center"
+                     style="width: 150px; height: 150px; font-size: 64px;">
                     {{ user.full_name[0]|upper }}
                 </div>
             {% endif %}
         </div>
 
         <!-- Thông tin cơ bản -->
-        <div class="profile-info">
-            <h1>
+        <div class="col-md-9">
+            <h2 class="mb-2">
                 {{ user.full_name }}
                 {% if user.role == 'ADMIN' %}
-                    <span class="badge badge-admin">ADMIN</span>
+                    <span class="badge bg-danger">ADMIN</span>
                 {% elif user.role == 'MOD' %}
-                    <span class="badge badge-mod">MOD</span>
+                    <span class="badge bg-warning text-dark">MOD</span>
                 {% endif %}
-            </h1>
-            <p class="profile-email">✉ {{ user.email }}</p>
-            {% if user.school %}<p>🏫 {{ user.school }}</p>{% endif %}
-            {% if user.major %}<p>📖 {{ user.major }}</p>{% endif %}
-            {% if user.bio %}<p class="profile-bio">{{ user.bio }}</p>{% endif %}
-            <p class="profile-joined">
+            </h2>
+            <p class="text-muted mb-1">✉ {{ user.email }}</p>
+            {% if user.school %}<p class="mb-1">🏫 {{ user.school }}</p>{% endif %}
+            {% if user.major %}<p class="mb-1">📖 {{ user.major }}</p>{% endif %}
+            {% if user.bio %}<p class="mb-2 fst-italic">{{ user.bio }}</p>{% endif %}
+            <p class="text-muted small">
                 Tham gia: {{ user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A' }}
-                | ⭐ {{ user.reputation_points }} điểm uy tín
             </p>
 
             <!-- Nút chỉnh sửa hồ sơ -->
-            <div class="profile-actions">
-                <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-outline">
+            {% if is_owner %}
+            <div class="mt-3">
+                <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-outline-primary btn-sm me-2">
                     ✏ Chỉnh Sửa Hồ Sơ
                 </a>
-                <a href="{{ url_for('profile.change_password') }}" class="btn btn-outline">
+                <a href="{{ url_for('profile.change_password') }}" class="btn btn-outline-secondary btn-sm">
                     🔑 Đổi Mật Khẩu
                 </a>
             </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- ================================================
-         KHO TÀI LIỆU CÁ NHÂN
-         ================================================ -->
-    <div class="profile-docs">
-        <div class="section-header">
-            <h2>📂 Tài Liệu Đã Chia Sẻ ({{ documents|length }})</h2>
-            <a href="{{ url_for('documents.upload') }}" class="btn btn-success">⬆ Upload Mới</a>
+    <!-- TABS DANH SÁCH -->
+    <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="uploads-tab" data-bs-toggle="tab" data-bs-target="#uploads" type="button" role="tab" aria-controls="uploads" aria-selected="true">
+                Tài Liệu Đã Chia Sẻ ({{ documents|length }})
+            </button>
+        </li>
+        {% if is_owner %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="bookmarks-tab" data-bs-toggle="tab" data-bs-target="#bookmarks" type="button" role="tab" aria-controls="bookmarks" aria-selected="false">
+                Đã Lưu ({{ bookmarked_docs|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="downloads-tab" data-bs-toggle="tab" data-bs-target="#downloads" type="button" role="tab" aria-controls="downloads" aria-selected="false">
+                Lịch Sử Tải ({{ downloaded_docs|length }})
+            </button>
+        </li>
+        {% endif %}
+    </ul>
+
+    <div class="tab-content border border-top-0 rounded-bottom p-4 bg-white shadow-sm mb-5" id="profileTabsContent">
+        <!-- TAB: Uploads -->
+        <div class="tab-pane fade show active" id="uploads" role="tabpanel" aria-labelledby="uploads-tab">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="m-0">Kho tài liệu</h5>
+                {% if is_owner %}
+                <a href="{{ url_for('documents.upload') }}" class="btn btn-success btn-sm">⬆ Upload Mới</a>
+                {% endif %}
+            </div>
+            
+            {% if documents %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tên Tài Liệu</th>
+                            <th>Danh mục</th>
+                            <th>Định dạng</th>
+                            <th>Trạng thái</th>
+                            <th>Tải/Xem</th>
+                            <th>Ngày đăng</th>
+                            {% if is_owner %}<th>Thao tác</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documents %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('documents.detail', doc_id=doc.id) }}" class="text-decoration-none fw-semibold border-0">
+                                    {{ doc.title }}
+                                </a>
+                            </td>
+                            <td>{{ doc.category.name if doc.category else '-' }}</td>
+                            <td><span class="badge bg-secondary">{{ doc.file_format }}</span></td>
+                            <td>
+                                {% if doc.status == 'PENDING' %}<span class="badge bg-warning text-dark">⏳ Chờ duyệt</span>
+                                {% elif doc.status == 'APPROVED' %}<span class="badge bg-success">✅ Đã duyệt</span>
+                                {% else %}<span class="badge bg-danger">❌ Từ chối</span>{% endif %}
+                            </td>
+                            <td>{{ doc.download_count }}/{{ doc.view_count }}</td>
+                            <td>{{ doc.created_at.strftime('%d/%m/%Y') }}</td>
+                            {% if is_owner %}
+                            <td>
+                                <a href="{{ url_for('profile.edit_document', doc_id=doc.id) }}" class="btn btn-sm btn-outline-secondary">✏</a>
+                                <form method="POST" action="{{ url_for('profile.delete_document', doc_id=doc.id) }}" style="display:inline" onsubmit="return confirm('Xóa tài liệu này?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">🗑</button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <p class="text-muted">Chưa chia sẻ tài liệu nào.</p>
+                {% if is_owner %}
+                <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Chia sẻ ngay!</a>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
 
-        {% if documents %}
-        <table class="doc-table">
-            <thead>
-                <tr>
-                    <th>Tên Tài Liệu</th>
-                    <th>Danh mục</th>
-                    <th>Định dạng</th>
-                    <th>Trạng thái</th>
-                    <th>Lượt tải</th>
-                    <th>Ngày đăng</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for doc in documents %}
-                <tr>
-                    <td>
-                        <a href="{{ url_for('documents.detail', doc_id=doc.id) }}">
-                            {{ doc.title }}
-                        </a>
-                    </td>
-                    <td>{{ doc.category.name if doc.category else '-' }}</td>
-                    <td><span class="format-badge {{ doc.file_format|lower }}">{{ doc.file_format }}</span></td>
-                    <!-- Màu badge theo trạng thái kiểm duyệt -->
-                    <td>
-                        <span class="status-badge status-{{ doc.status|lower }}">
-                            {% if doc.status == 'PENDING' %}⏳ Chờ duyệt
-                            {% elif doc.status == 'APPROVED' %}✅ Đã duyệt
-                            {% else %}❌ Từ chối{% endif %}
-                        </span>
-                    </td>
-                    <td>{{ doc.downloads_count }}</td>
-                    <td>{{ doc.created_at.strftime('%d/%m/%Y') }}</td>
-                    <td class="table-actions">
-                        <!-- Nút sửa tên tài liệu -->
-                        <a href="{{ url_for('profile.edit_document', doc_id=doc.id) }}"
-                           class="btn btn-sm btn-outline">✏</a>
-                        <!-- Nút xóa - có confirm dialog -->
-                        <form method="POST"
-                              action="{{ url_for('profile.delete_document', doc_id=doc.id) }}"
-                              style="display:inline"
-                              onsubmit="return confirm('Xóa tài liệu này?')">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-danger">🗑</button>
-                        </form>
-                    </td>
-                </tr>
+        {% if is_owner %}
+        <!-- TAB: Bookmarks -->
+        <div class="tab-pane fade" id="bookmarks" role="tabpanel" aria-labelledby="bookmarks-tab">
+            <h5 class="mb-3">Tài liệu đã lưu</h5>
+            {% if bookmarked_docs %}
+            <div class="list-group">
+                {% for doc in bookmarked_docs %}
+                <a href="{{ url_for('documents.detail', doc_id=doc.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 text-primary border-0">{{ doc.title }}</h6>
+                        <small class="text-muted">{{ doc.category.name if doc.category else 'N/A' }} | Định dạng: {{ doc.file_format }}</small>
+                    </div>
+                </a>
                 {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="empty-state">
-            <p>Bạn chưa chia sẻ tài liệu nào.</p>
-            <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">
-                Chia sẻ ngay!
-            </a>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <p class="text-muted">Bạn chưa lưu tài liệu nào.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- TAB: Downloads -->
+        <div class="tab-pane fade" id="downloads" role="tabpanel" aria-labelledby="downloads-tab">
+            <h5 class="mb-3">Lịch sử tải xuống</h5>
+            {% if downloaded_docs %}
+            <div class="list-group">
+                {% for doc in downloaded_docs %}
+                <a href="{{ url_for('documents.detail', doc_id=doc.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 text-primary border-0">{{ doc.title }}</h6>
+                        <small class="text-muted">{{ doc.category.name if doc.category else 'N/A' }} | Tác giả: {{ doc.uploader.full_name if doc.uploader else 'Ẩn danh' }}</small>
+                    </div>
+                    <span class="badge bg-primary rounded-pill">{{ doc.download_count }} lượt tải</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <p class="text-muted">Bạn chưa tải tài liệu nào.</p>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>

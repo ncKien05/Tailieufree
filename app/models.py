@@ -33,8 +33,12 @@ class User(UserMixin, db.Model):
     documents = db.relationship('Document', backref='uploader', lazy=True,
                                 foreign_keys='Document.uploader_id')
 
-    # Quan hệ: 1 user có nhiều đánh giá (one-to-many)
-    reviews = db.relationship('CommunityReview', backref='reviewer', lazy=True)
+    # Quan hệ mở rộng
+    posts = db.relationship('Post', backref='author', lazy=True)
+    comments = db.relationship('Comment', backref='author', lazy=True)
+    ratings = db.relationship('Rating', backref='reviewer', lazy=True)
+    bookmarks = db.relationship('Bookmark', backref='user', lazy=True)
+    download_history = db.relationship('DownloadHistory', backref='user', lazy=True)
 
     # --- Các helper method ---
 
@@ -86,12 +90,15 @@ class Document(db.Model):
                             ondelete='SET NULL'), nullable=True)            # FK → category
     status = db.Column(db.Enum('PENDING', 'APPROVED', 'REJECTED'),
                        default='PENDING')                                   # Trạng thái duyệt
-    downloads_count = db.Column(db.Integer, default=0)                      # Số lượt tải
+    download_count = db.Column(db.Integer, default=0)                      # Số lượt tải
+    view_count = db.Column(db.Integer, default=0)                          # Số lượt xem
     created_at = db.Column(db.DateTime, default=datetime.utcnow)            # Ngày upload
 
-    # Quan hệ: 1 tài liệu có nhiều đánh giá
-    reviews = db.relationship('CommunityReview', backref='document',
-                              lazy=True, cascade='all, delete-orphan')
+    # Quan hệ mở rộng: 1 tài liệu có nhiều đánh giá, comment, bookmark, lịch sử tải
+    ratings = db.relationship('Rating', backref='document', lazy=True, cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref='document', lazy=True, cascade='all, delete-orphan')
+    bookmarks = db.relationship('Bookmark', backref='document', lazy=True, cascade='all, delete-orphan')
+    download_history = db.relationship('DownloadHistory', backref='document_ref', lazy=True, cascade='all, delete-orphan')
 
     def is_approved(self):
         """Kiểm tra tài liệu đã được duyệt chưa."""
@@ -102,19 +109,64 @@ class Document(db.Model):
 
 
 # ============================================================
-# Model: CommunityReview - Bảng đánh giá cộng đồng
+# Model: Post - Bài viết Blog
 # ============================================================
-class CommunityReview(db.Model):
-    __tablename__ = 'community_review'
+class Post(db.Model):
+    __tablename__ = 'posts'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    document_id = db.Column(db.String(36), db.ForeignKey('documents.id',
-                            ondelete='CASCADE'), nullable=False)            # FK → documents
-    user_id = db.Column(db.String(36), db.ForeignKey('users.id',
-                        ondelete='CASCADE'), nullable=False)                # FK → users
-    rating = db.Column(db.SmallInteger, nullable=False)                     # Điểm 1-5 sao
-    comment = db.Column(db.Text)                                            # Nội dung nhận xét
+    id = db.Column(db.String(36), primary_key=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text, nullable=False) # MEDIUMTEXT
+    tags = db.Column(db.String(255))
+    likes_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __repr__(self):
-        return f'<Review doc={self.document_id} rating={self.rating}>'
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade='all, delete-orphan')
+
+# ============================================================
+# Model: Comment - Bình luận
+# ============================================================
+class Comment(db.Model):
+    __tablename__ = 'comments'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    post_id = db.Column(db.String(36), db.ForeignKey('posts.id', ondelete='CASCADE'), nullable=True)
+    document_id = db.Column(db.String(36), db.ForeignKey('documents.id', ondelete='CASCADE'), nullable=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ============================================================
+# Model: Rating - Đánh giá tài liệu
+# ============================================================
+class Rating(db.Model):
+    __tablename__ = 'ratings'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    doc_id = db.Column(db.String(36), db.ForeignKey('documents.id', ondelete='CASCADE'), nullable=False)
+    star_value = db.Column(db.SmallInteger, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ============================================================
+# Model: Bookmark - Lưu tài liệu
+# ============================================================
+class Bookmark(db.Model):
+    __tablename__ = 'bookmarks'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    doc_id = db.Column(db.String(36), db.ForeignKey('documents.id', ondelete='CASCADE'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ============================================================
+# Model: DownloadHistory - Lịch sử tải về
+# ============================================================
+class DownloadHistory(db.Model):
+    __tablename__ = 'download_history'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    document_id = db.Column(db.String(36), db.ForeignKey('documents.id', ondelete='CASCADE'), nullable=False)
+    downloaded_at = db.Column(db.DateTime, default=datetime.utcnow)

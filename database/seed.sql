@@ -58,7 +58,7 @@ INSERT IGNORE INTO users (id, email, password_hash, full_name, role, is_banned) 
     ('teacher-2', 'nguyenhai@example.com', 'dummy', 'Thầy Nguyễn Hải', 'USER', FALSE),
     ('teacher-3', 'thuyduong@example.com', 'dummy', 'Cô Thùy Dương', 'USER', FALSE),
     ('teacher-4', 'son@example.com', 'dummy', 'Thầy Sơn', 'USER', FALSE),
-    ('teacher-5', 'nguyennam@example.com', 'dummy', 'Thầy Nguyễn Nam', 'USER', FALSE);
+    ('MOD', 'mod@mod.com', '$2b$12$Z0H9I1.QEK20zP4.wQGfceH8Z8lE.XF10/i3J5k30PZl90VvIEXxK', 'Mod', 'MOD', FALSE);
 
 -- -------------------------------------------------------
 -- Thêm các tài liệu mẫu theo yêu cầu

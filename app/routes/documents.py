@@ -9,7 +9,7 @@ from flask import (Blueprint, render_template, redirect, url_for,
                    flash, request, send_from_directory, abort, current_app)
 from flask_login import login_required, current_user
 from .. import db
-from ..models import Document, Category, CommunityReview
+from ..models import Document, Category, Rating, Comment, DownloadHistory
 from ..forms import UploadDocForm
 from ..utils import save_uploaded_file, generate_uuid
 
@@ -159,20 +159,19 @@ def detail(doc_id):
     if doc.status != 'APPROVED' and not is_owner and not is_admin:
         abort(404)
 
-    reviews = (CommunityReview.query
-               .filter_by(document_id=doc_id)
-               .order_by(CommunityReview.created_at.desc())
-               .all())
+    # Lấy danh sách rating và comment riêng rẽ
+    ratings = Rating.query.filter_by(doc_id=doc_id).order_by(Rating.created_at.desc()).all()
+    comments = Comment.query.filter_by(document_id=doc_id).order_by(Comment.created_at.desc()).all()
 
     # Kiểm tra user hiện tại đã đánh giá chưa
     user_review = None
     can_review  = False
     review_form = None
     if current_user.is_authenticated:
-        user_review = CommunityReview.query.filter_by(
-            document_id=doc_id,
+        user_review = Rating.query.filter_by(
+            doc_id=doc_id,
             user_id=current_user.id
-        ).first()
+        ).first() # gán tạm user_review làm rating để template dùng đỡ crash
         # Có thể đánh giá: đã đăng nhập, không phải chủ tài liệu,
         # chưa đánh giá, tài liệu APPROVED
         can_review = (not is_owner
@@ -182,7 +181,8 @@ def detail(doc_id):
 
     return render_template('documents/detail.html',
                            doc=doc,
-                           reviews=reviews,
+                           ratings=ratings,
+                           comments=comments,
                            is_owner=is_owner,
                            review_form=review_form,
                            user_review=user_review,
@@ -207,9 +207,9 @@ def submit_review(doc_id):
         flash('Bạn không thể đánh giá tài liệu của chính mình.', 'warning')
         return redirect(url_for('documents.detail', doc_id=doc_id))
 
-    # Không cho đánh giá 2 lần
-    existing = CommunityReview.query.filter_by(
-        document_id=doc_id,
+    # Thay vì truy vấn CommunityReview, bây giờ ta dùng Ratings
+    existing = Rating.query.filter_by(
+        doc_id=doc_id,
         user_id=current_user.id
     ).first()
     if existing:
@@ -218,24 +218,32 @@ def submit_review(doc_id):
 
     # Lấy dữ liệu từ form
     try:
-        rating = int(request.form.get('rating', 0))
+        rating_value = int(request.form.get('rating', 0))
     except (ValueError, TypeError):
-        rating = 0
+        rating_value = 0
 
-    if rating < 1 or rating > 5:
+    if rating_value < 1 or rating_value > 5:
         flash('Vui lòng chọn số sao từ 1 đến 5.', 'danger')
         return redirect(url_for('documents.detail', doc_id=doc_id))
 
-    comment = request.form.get('comment', '').strip() or None
+    comment_text = request.form.get('comment', '').strip() or None
 
     try:
-        review = CommunityReview(
-            document_id=doc_id,
+        new_rating = Rating(
+            doc_id=doc_id,
             user_id=current_user.id,
-            rating=rating,
-            comment=comment
+            star_value=rating_value
         )
-        db.session.add(review)
+        db.session.add(new_rating)
+        
+        if comment_text:
+            new_comment = Comment(
+                document_id=doc_id,
+                user_id=current_user.id,
+                content=comment_text
+            )
+            db.session.add(new_comment)
+            
         db.session.commit()
         flash('Cảm ơn bạn đã đánh giá! ⭐', 'success')
     except Exception as e:
@@ -269,7 +277,12 @@ def download(doc_id):
         abort(403)
 
     # Tăng số lượt tải
-    doc.downloads_count += 1
+    doc.download_count += 1
+    
+    # Ghi lại lịch sử tải
+    download_history = DownloadHistory(user_id=current_user.id, document_id=doc_id)
+    db.session.add(download_history)
+    
     db.session.commit()
 
     # Xác định đường dẫn file thực tế
@@ -285,3 +298,70 @@ def download(doc_id):
     # as_attachment=True → browser sẽ hiện hộp thoại "Save As"
     return send_from_directory(file_dir, filename, as_attachment=True,
                                download_name=f"{doc.title}.{doc.file_format.lower()}")
+
+# ============================================================
+# Route: POST /documents/<doc_id>/review/edit - Sửa đánh giá
+# ============================================================
+@doc_bp.route('/documents/<string:doc_id>/review/edit', methods=['POST'])
+@login_required
+def edit_review(doc_id):
+    """Cập nhật đánh giá của user."""
+    doc = Document.query.get_or_404(doc_id)
+    if doc.status != 'APPROVED': abort(403)
+    
+    existing_rating = Rating.query.filter_by(doc_id=doc_id, user_id=current_user.id).first()
+    if not existing_rating:
+        flash('Bạn chưa đánh giá tài liệu này.', 'warning')
+        return redirect(url_for('documents.detail', doc_id=doc_id))
+        
+    try:
+        rating_value = int(request.form.get('rating', existing_rating.star_value))
+    except (ValueError, TypeError):
+        rating_value = existing_rating.star_value
+        
+    if rating_value < 1 or rating_value > 5:
+        flash('Vui lòng chọn số sao từ 1 đến 5.', 'danger')
+        return redirect(url_for('documents.detail', doc_id=doc_id))
+        
+    comment_text = request.form.get('comment', '').strip() or None
+    
+    try:
+        existing_rating.star_value = rating_value
+        
+        # Cập nhật hoặc thêm/xóa bình luận
+        existing_comment = Comment.query.filter_by(document_id=doc_id, user_id=current_user.id).first()
+        if existing_comment:
+            if comment_text:
+                existing_comment.content = comment_text
+            else:
+                db.session.delete(existing_comment)
+        elif comment_text:
+            new_comment = Comment(document_id=doc_id, user_id=current_user.id, content=comment_text)
+            db.session.add(new_comment)
+            
+        db.session.commit()
+        flash('Đã cập nhật đánh giá thành công! ⭐', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Lỗi khi cập nhật đánh giá: {str(e)}', 'danger')
+        
+    return redirect(url_for('documents.detail', doc_id=doc_id))
+
+# ============================================================
+# Route: POST /documents/<doc_id>/review/delete - Xóa đánh giá
+# ============================================================
+@doc_bp.route('/documents/<string:doc_id>/review/delete', methods=['POST'])
+@login_required
+def delete_review(doc_id):
+    """Xóa bỏ đánh giá của user."""
+    existing_rating = Rating.query.filter_by(doc_id=doc_id, user_id=current_user.id).first()
+    if existing_rating:
+        db.session.delete(existing_rating)
+        
+    existing_comment = Comment.query.filter_by(document_id=doc_id, user_id=current_user.id).first()
+    if existing_comment:
+        db.session.delete(existing_comment)
+        
+    db.session.commit()
+    flash('Đã xóa đánh giá của bạn khỏi tài liệu.', 'info')
+    return redirect(url_for('documents.detail', doc_id=doc_id))

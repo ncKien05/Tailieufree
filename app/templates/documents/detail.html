@@ -50,7 +50,7 @@
                 {% endif %}
                 <div class="meta-item">
                     <span class="meta-label">⬇ Lượt tải:</span>
-                    <span>{{ doc.downloads_count }}</span>
+                    <span>{{ doc.download_count }}</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">📆 Ngày đăng:</span>
@@ -125,23 +125,68 @@
             <p class="review-hint">Bạn không thể tự đánh giá tài liệu của mình.</p>
 
             {% elif user_review %}
-            <p class="review-hint">✅ Bạn đã đánh giá {{ user_review.rating }}⭐ cho tài liệu này.</p>
+            <p class="review-hint">✅ Bạn đã đánh giá {{ user_review.star_value }}⭐ cho tài liệu này.</p>
             {% endif %}
 
             <!-- Danh sách đánh giá -->
-            {% if reviews %}
-                {% for review in reviews %}
-                <div class="review-item">
-                    <div class="review-header">
-                        <strong>{{ review.reviewer.full_name if review.reviewer else 'Ẩn danh' }}</strong>
+            {% if ratings %}
+                {% for rate in ratings %}
+                <div class="review-item mb-3">
+                    <div class="review-header d-flex justify-content-between">
+                        <strong>{{ rate.reviewer.full_name if rate.reviewer else 'Ẩn danh' }}</strong>
                         <span class="stars">
-                            {% for i in range(review.rating) %}⭐{% endfor %}
+                            {% for i in range(rate.star_value) %}⭐{% endfor %}
                         </span>
                     </div>
-                    {% if review.comment %}
-                        <p class="review-comment">{{ review.comment }}</p>
+                    {% set user_comment = None %}
+                    {% for cmt in comments %}
+                        {% if cmt.user_id == rate.user_id %}
+                            <p class="review-comment mt-2 fst-italic">"{{ cmt.content }}"</p>
+                            {% if current_user.is_authenticated and current_user.id == rate.user_id %}
+                                {% set user_comment = cmt %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small class="review-date text-muted">{{ rate.created_at.strftime('%d/%m/%Y') }}</small>
+                        {% if current_user.is_authenticated and current_user.id == rate.user_id %}
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="var el = document.getElementById('editReviewForm{{ rate.id }}'); el.style.display = (el.style.display === 'none' ? 'block' : 'none');">✏ Sửa</button>
+                            <form method="POST" action="{{ url_for('documents.delete_review', doc_id=doc.id) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa đánh giá này không?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">🗑 Xóa</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if current_user.is_authenticated and current_user.id == rate.user_id %}
+                    <div class="mt-3 p-3 border rounded bg-light" id="editReviewForm{{ rate.id }}" style="display: none;">
+                        <form method="POST" action="{{ url_for('documents.edit_review', doc_id=doc.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                            <div class="form-group mb-2">
+                                <label for="ratingEdit">Số sao cập nhật</label>
+                                <select name="rating" id="ratingEdit" class="form-control" required style="max-width: 250px;">
+                                    <option value="5" {% if rate.star_value == 5 %}selected{% endif %}>⭐⭐⭐⭐⭐ Xuất sắc</option>
+                                    <option value="4" {% if rate.star_value == 4 %}selected{% endif %}>⭐⭐⭐⭐ Tốt</option>
+                                    <option value="3" {% if rate.star_value == 3 %}selected{% endif %}>⭐⭐⭐ Bình thường</option>
+                                    <option value="2" {% if rate.star_value == 2 %}selected{% endif %}>⭐⭐ Tệ</option>
+                                    <option value="1" {% if rate.star_value == 1 %}selected{% endif %}>⭐ Rất tệ</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group mb-2">
+                                <label for="commentEdit">Sửa nhận xét</label>
+                                <textarea name="comment" id="commentEdit" class="form-control" rows="2"
+                                          maxlength="1000">{{ user_comment.content if user_comment else '' }}</textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-sm mt-2">Lưu Thay Đổi</button>
+                        </form>
+                    </div>
                     {% endif %}
-                    <small class="review-date">{{ review.created_at.strftime('%d/%m/%Y') }}</small>
                 </div>
                 {% endfor %}
             {% else %}

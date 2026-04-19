@@ -6,7 +6,7 @@
 #       để tránh crash khi MySQL chưa sẵn sàng
 # ============================================================
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect   # THÊM MỚI: bảo vệ CSRF toàn app
@@ -136,6 +136,13 @@ def create_app():
     # Xử lý lỗi toàn cục
     # --------------------------------------------------------
     register_error_handlers(app)
+
+    # --------------------------------------------------------
+    # Xử lý phục vụ file từ thư mục Upload (Ảnh Avatar bìa)
+    # --------------------------------------------------------
+    @app.route('/uploads/<path:filename>')
+    def uploaded_file(filename):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
     return app
 

@@ -19,26 +19,49 @@ profile_bp = Blueprint('profile', __name__)
 
 
 # ============================================================
-# Route: GET /profile/ - Xem hồ sơ cá nhân + kho tài liệu
+# Route: GET /profile/ và /profile/<user_id> - Xem hồ sơ
 # ============================================================
 @profile_bp.route('/')
+@profile_bp.route('/<string:user_id>')
 @login_required
-def profile():
+def profile(user_id=None):
     """
-    Hiển thị trang hồ sơ cá nhân của user đang đăng nhập:
-    - Thông tin cá nhân (tên, trường, ngành, bio...)
-    - Danh sách tất cả tài liệu đã upload (kể cả PENDING, REJECTED)
+    Hiển thị trang hồ sơ. 
+    Nếu không có user_id -> xem trang của mình.
     """
-    # Lấy danh sách tài liệu của user hiện tại, sắp xếp mới nhất trước
+    from ..models import Bookmark, DownloadHistory
+
+    if user_id is None:
+        user_id = current_user.id
+        
+    user = User.query.get_or_404(user_id)
+    is_owner = (current_user.id == user.id)
+
+    # 1. Danh sách tài liệu đã upload
     my_docs = (Document.query
-               .filter_by(uploader_id=current_user.id)
+               .filter_by(uploader_id=user.id)
                .order_by(Document.created_at.desc())
                .all())
 
+    # 2. Danh sách Bookmark (chỉ chủ sở hữu mới xem được)
+    bookmarked_docs = []
+    # 3. Lịch sử tải xuống (chỉ chủ sở hữu mới xem được)
+    downloaded_docs = []
+
+    if is_owner:
+        bookmarks = Bookmark.query.filter_by(user_id=user.id).order_by(Bookmark.created_at.desc()).all()
+        bookmarked_docs = [b.document for b in bookmarks if b.document is not None]
+
+        downloads = DownloadHistory.query.filter_by(user_id=user.id).order_by(DownloadHistory.downloaded_at.desc()).all()
+        downloaded_docs = [d.document_ref for d in downloads if d.document_ref is not None]
+
     return render_template('profile/profile.html',
-                           user=current_user,
+                           user=user,
                            documents=my_docs,
-                           title='Hồ Sơ Của Tôi')
+                           bookmarked_docs=bookmarked_docs,
+                           downloaded_docs=downloaded_docs,
+                           is_owner=is_owner,
+                           title=f'Hồ Sơ Của {user.full_name}')
 
 
 # ============================================================

@@ -83,8 +83,13 @@ def login():
         password_bytes = form.password.data.encode('utf-8')
         hash_bytes = user.password_hash.encode('utf-8')
 
-        if not bcrypt.checkpw(password_bytes, hash_bytes):
-            flash('Mật khẩu không đúng.', 'danger')
+        try:
+            is_valid = bcrypt.checkpw(password_bytes, hash_bytes)
+        except ValueError:
+            is_valid = False
+
+        if not is_valid:
+            flash('Mật khẩu không đúng hoặc tài khoản chưa được mã hóa mật khẩu.', 'danger')
             return render_template('auth/login.html', form=form, title='Đăng Nhập')
 
         # Kiểm tra tài khoản có bị khóa không (Admin ban)

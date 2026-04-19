@@ -32,7 +32,7 @@
             {{ form.avatar.label }}
             <!-- Hiện avatar hiện tại nếu có -->
             {% if current_user.avatar_url %}
-                <img src="{{ url_for('static', filename='uploads/' + current_user.avatar_url) }}"
+                <img src="{{ url_for('uploaded_file', filename=current_user.avatar_url) }}"
                      class="avatar-preview" alt="Avatar hiện tại">
                 <small>Avatar hiện tại - Upload ảnh mới để thay thế</small>
             {% endif %}
